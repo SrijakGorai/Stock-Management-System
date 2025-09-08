@@ -8,6 +8,7 @@ import NotFound from "./pages/NotFound";
 import { getToken } from "./auth";
 import IssueMaterialPage from "./pages/IssueMaterialPage";
 import RemainingMaterialPage from "./pages/RemainingMaterialPage";
+import Footer from "./components/Footer";
 
 // Inside your <Routes>
 
@@ -35,6 +36,7 @@ const App = () => {
 
         <Route path="*" element={<NotFound />} />
       </Routes>
+       <Footer />
     </Router>
   );
 };

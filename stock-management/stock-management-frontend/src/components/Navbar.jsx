@@ -1,51 +1,117 @@
-import React from 'react';
-import AppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import { useNavigate } from 'react-router-dom';
-import { isAdmin, logout, getToken } from '../auth';
+import React, { useState } from "react";
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  IconButton,
+  Menu,
+  MenuItem,
+  useTheme,
+  useMediaQuery,
+} from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
+import { useNavigate } from "react-router-dom";
+import { isAdmin, logout, getToken } from "../auth";
 
 const Navbar = () => {
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isLoggedIn = getToken();
+
+  const [anchorEl, setAnchorEl] = useState(null);
+  const handleMenu = (event) => setAnchorEl(event.currentTarget);
+  const handleClose = () => setAnchorEl(null);
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate("/login");
+    handleClose();
   };
 
-  const isLoggedIn = getToken();
+  const loggedInLinks = [
+    { label: "Dashboard", path: "/dashboard" },
+    ...(isAdmin()
+      ? [
+          { label: "Add Material", path: "/add" },
+          { label: "Issue Material", path: "/issue" },
+          { label: "Remaining Material", path: "/remaining" },
+        ]
+      : []),
+    { label: "Logout", action: handleLogout },
+  ];
+
+  const guestLinks = [
+    { label: "Login", path: "/login" },
+    { label: "Register", path: "/register" },
+  ];
+
+  const links = isLoggedIn ? loggedInLinks : guestLinks;
 
   return (
-    <AppBar position="static">
+    <AppBar
+      position="static"
+      sx={{
+        backgroundColor: "rgba(0,0,0,0.5)", // semi-transparent
+        backdropFilter: "blur(10px)",
+      }}
+    >
       <Toolbar>
-        <Typography variant="h6" sx={{ flexGrow: 1 }}>
+        <Typography
+          variant="h6"
+          sx={{ flexGrow: 1, color: "white", fontWeight: 600 }}
+        >
           Stock Management
         </Typography>
 
-        {isLoggedIn && (
+        {isMobile ? (
           <>
-            <Button color="inherit" onClick={() => navigate('/dashboard')}>
-              Dashboard
-            </Button>
-
-            {isAdmin() && (
-              <>
-                <Button color="inherit" onClick={() => navigate('/add')}>
-                  Add Material
+            <IconButton color="inherit" onClick={handleMenu}>
+              <MenuIcon sx={{ color: "white" }} />
+            </IconButton>
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={handleClose}
+            >
+              {links.map((link, idx) => (
+                <MenuItem
+                  key={idx}
+                  onClick={() => {
+                    handleClose();
+                    if (link.path) navigate(link.path);
+                    else if (link.action) link.action();
+                  }}
+                >
+                  {link.label}
+                </MenuItem>
+              ))}
+            </Menu>
+          </>
+        ) : (
+          <>
+            {links.map((link, idx) =>
+              link.path ? (
+                <Button
+                  key={idx}
+                  color="inherit"
+                  onClick={() => navigate(link.path)}
+                  sx={{ color: "white" }}
+                >
+                  {link.label}
                 </Button>
-                <Button color="inherit" onClick={() => navigate('/issue')}>
-                  Issue Material
+              ) : (
+                <Button
+                  key={idx}
+                  color="inherit"
+                  onClick={link.action}
+                  sx={{ color: "white" }}
+                >
+                  {link.label}
                 </Button>
-                <Button color="inherit" onClick={() => navigate('/remaining')}>
-                  Remaining Material
-                </Button>
-              </>
+              )
             )}
-
-            <Button color="inherit" onClick={handleLogout}>
-              Logout
-            </Button>
           </>
         )}
       </Toolbar>

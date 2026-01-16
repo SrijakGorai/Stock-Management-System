@@ -22,7 +22,7 @@ const Footer = () => {
         Efficient. Reliable. Secure.
       </Typography>
       <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 1 }}>
-        © {new Date().getFullYear()} Stock Management System. All rights reserved.
+        © {new Date().getFullYear()} Srijak Gorai. All rights reserved.
       </Typography>
     </Box>
   );

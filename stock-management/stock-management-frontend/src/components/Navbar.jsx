@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import {
   AppBar,
   Toolbar,
@@ -12,14 +12,15 @@ import {
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import { useNavigate } from "react-router-dom";
-import { isAdmin, logout, getToken } from "../auth";
+import { AuthContext } from "../context/AuthContext";
 
 const Navbar = () => {
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const isLoggedIn = getToken();
+  const { token, isAdmin, logout } = useContext(AuthContext);
 
+  const isLoggedIn = !!token;
   const [anchorEl, setAnchorEl] = useState(null);
   const handleMenu = (event) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
@@ -32,7 +33,7 @@ const Navbar = () => {
 
   const loggedInLinks = [
     { label: "Dashboard", path: "/dashboard" },
-    ...(isAdmin()
+    ...(isAdmin
       ? [
           { label: "Add Material", path: "/add" },
           { label: "Issue Material", path: "/issue" },
@@ -52,16 +53,10 @@ const Navbar = () => {
   return (
     <AppBar
       position="static"
-      sx={{
-        backgroundColor: "rgba(0,0,0,0.5)", // semi-transparent
-        backdropFilter: "blur(10px)",
-      }}
+      sx={{ backgroundColor: "rgba(0,0,0,0.5)", backdropFilter: "blur(10px)" }}
     >
       <Toolbar>
-        <Typography
-          variant="h6"
-          sx={{ flexGrow: 1, color: "white", fontWeight: 600 }}
-        >
+        <Typography variant="h6" sx={{ flexGrow: 1, color: "white", fontWeight: 600 }}>
           Stock Management
         </Typography>
 
@@ -70,11 +65,7 @@ const Navbar = () => {
             <IconButton color="inherit" onClick={handleMenu}>
               <MenuIcon sx={{ color: "white" }} />
             </IconButton>
-            <Menu
-              anchorEl={anchorEl}
-              open={Boolean(anchorEl)}
-              onClose={handleClose}
-            >
+            <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
               {links.map((link, idx) => (
                 <MenuItem
                   key={idx}
@@ -90,29 +81,17 @@ const Navbar = () => {
             </Menu>
           </>
         ) : (
-          <>
-            {links.map((link, idx) =>
-              link.path ? (
-                <Button
-                  key={idx}
-                  color="inherit"
-                  onClick={() => navigate(link.path)}
-                  sx={{ color: "white" }}
-                >
-                  {link.label}
-                </Button>
-              ) : (
-                <Button
-                  key={idx}
-                  color="inherit"
-                  onClick={link.action}
-                  sx={{ color: "white" }}
-                >
-                  {link.label}
-                </Button>
-              )
-            )}
-          </>
+          links.map((link, idx) =>
+            link.path ? (
+              <Button key={idx} color="inherit" onClick={() => navigate(link.path)} sx={{ color: "white" }}>
+                {link.label}
+              </Button>
+            ) : (
+              <Button key={idx} color="inherit" onClick={link.action} sx={{ color: "white" }}>
+                {link.label}
+              </Button>
+            )
+          )
         )}
       </Toolbar>
     </AppBar>

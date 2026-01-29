@@ -1,175 +1,143 @@
-import { useState } from "react";
-import {
-  Box,
-  Button,
-  TextField,
-  Typography,
-  Link as MuiLink,
-  Paper,
-  useTheme,
-} from "@mui/material";
-import { Link, useNavigate } from "react-router-dom";
+import { useContext, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../services/api";
-import { setToken, setRole, logout } from "../auth";
+import { AuthContext } from "../context/AuthContext";
+import { Box, Paper, Typography, TextField, Button, Link as MuiLink } from "@mui/material";
 import Navbar from "../components/Navbar";
+import { Link } from "react-router-dom";
 
 const Login = () => {
   const [credentials, setCredentials] = useState({ username: "", password: "" });
+  const [fadeIn, setFadeIn] = useState(false); // for animation
+  const { login } = useContext(AuthContext);
   const navigate = useNavigate();
-  const theme = useTheme();
 
-  const handleChange = (e) => {
-    setCredentials({ ...credentials, [e.target.name]: e.target.value });
-  };
+  useEffect(() => {
+    const timer = setTimeout(() => setFadeIn(true), 100); // fade in effect
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleChange = (e) => setCredentials({ ...credentials, [e.target.name]: e.target.value });
 
   const handleLogin = async () => {
     try {
       const res = await api.post("/api/auth/login", credentials);
       if (res.data?.token && res.data?.role) {
-        setToken(res.data.token);
-        setRole(res.data.role);
+        login(res.data.token, res.data.role);
         navigate("/dashboard");
       } else {
         throw new Error("Invalid response from server");
       }
     } catch (err) {
-      logout();
-      alert("Invalid credentials or token verification failed");
+      alert("Invalid credentials or server error");
     }
   };
 
   return (
     <>
       <Navbar />
-
       <Box
         sx={{
           minHeight: "100vh",
-          width: "100%",
           display: "flex",
-          alignItems: "center",
           justifyContent: "center",
-          backgroundImage:
-            "url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1950&q=80')",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundAttachment: "fixed",
-          p: 2,
+          alignItems: "center",
           position: "relative",
+          "&::before": {
+            content: '""',
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            backgroundImage: "linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('/images/bg.jpg')",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            zIndex: -1,
+            filter: "brightness(0.9)",
+          },
         }}
       >
-        {/* Dark overlay */}
-        <Box
-          sx={{
-            position: "absolute",
-            inset: 0,
-            backgroundColor: "rgba(0,0,0,0.5)",
-          }}
-        />
-
-        {/* Glassmorphism Paper Form */}
         <Paper
-          elevation={8}
           sx={{
-            position: "relative",
-            zIndex: 1,
-            p: 4,
+            p: 5,
             maxWidth: 400,
-            width: "100%",
+            width: "90%",
+            backgroundColor: "rgba(255, 255, 255, 0.15)",
+            backdropFilter: "blur(20px)",
+            WebkitBackdropFilter: "blur(20px)",
             borderRadius: 3,
-            backdropFilter: "blur(15px)",
-            backgroundColor:
-              theme.palette.mode === "dark"
-                ? "rgba(0,0,0,0.3)"
-                : "rgba(255,255,255,0.15)",
-            border: "1px solid rgba(255,255,255,0.2)",
+            boxShadow: "0 10px 40px rgba(0,0,0,0.4)",
+            border: "1px solid rgba(255, 255, 255, 0.2)",
+            color: "#fff",
+            opacity: fadeIn ? 1 : 0,
+            transform: fadeIn ? "translateY(0)" : "translateY(-20px)",
+            transition: "all 0.8s ease-out",
           }}
         >
-          <Typography
-            variant="h4"
-            align="center"
-            gutterBottom
-            sx={{ fontWeight: 700, color: "white" }}
-          >
-            Login
+          <Typography variant="h4" align="center" sx={{ mb: 4, fontWeight: 600 }}>
+            Welcome Back
           </Typography>
 
           <TextField
             name="username"
             label="Username"
             fullWidth
-            margin="normal"
             onChange={handleChange}
-            InputProps={{
-              sx: {
-                backdropFilter: "blur(8px)",
-                backgroundColor:
-                  theme.palette.mode === "dark"
-                    ? "rgba(255,255,255,0.05)"
-                    : "rgba(255,255,255,0.25)",
-                borderRadius: 2,
-                color: "white",
+            sx={{
+              my: 2,
+              backgroundColor: "rgba(255,255,255,0.2)",
+              borderRadius: 1,
+              input: { color: "#fff" },
+              label: { color: "rgba(255,255,255,0.7)" },
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": { borderColor: "rgba(255,255,255,0.4)" },
+                "&:hover fieldset": { borderColor: "#90caf9" },
+                "&.Mui-focused fieldset": { borderColor: "#90caf9" },
               },
             }}
-            InputLabelProps={{ style: { color: "white" } }}
           />
 
           <TextField
             name="password"
-            label="Password"
             type="password"
+            label="Password"
             fullWidth
-            margin="normal"
             onChange={handleChange}
-            InputProps={{
-              sx: {
-                backdropFilter: "blur(8px)",
-                backgroundColor:
-                  theme.palette.mode === "dark"
-                    ? "rgba(255,255,255,0.05)"
-                    : "rgba(255,255,255,0.25)",
-                borderRadius: 2,
-                color: "white",
+            sx={{
+              my: 2,
+              backgroundColor: "rgba(255,255,255,0.2)",
+              borderRadius: 1,
+              input: { color: "#fff" },
+              label: { color: "rgba(255,255,255,0.7)" },
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": { borderColor: "rgba(255,255,255,0.4)" },
+                "&:hover fieldset": { borderColor: "#90caf9" },
+                "&.Mui-focused fieldset": { borderColor: "#90caf9" },
               },
             }}
-            InputLabelProps={{ style: { color: "white" } }}
           />
 
           <Button
-            variant="contained"
             fullWidth
+            variant="contained"
             onClick={handleLogin}
             sx={{
-              mt: 3,
-              py: 1.5,
-              borderRadius: 2,
-              fontSize: "1rem",
-              textTransform: "none",
-              background:
-                "linear-gradient(135deg, rgba(0,123,255,0.8), rgba(0,200,255,0.8))",
-              color: "#fff",
-              "&:hover": {
-                background:
-                  "linear-gradient(135deg, rgba(0,123,255,1), rgba(0,200,255,1))",
-              },
+              my: 3,
+              backgroundColor: "rgba(144, 202, 249,0.6)",
+              color: "#000",
+              fontWeight: 600,
+              "&:hover": { backgroundColor: "rgba(144, 202, 249,0.8)" },
+              transition: "0.3s all",
             }}
           >
             Login
           </Button>
 
-          <Typography
-            mt={2}
-            textAlign="center"
-            sx={{ color: "white", opacity: 0.9 }}
-          >
+          <Typography align="center" sx={{ color: "#fff", fontSize: 14 }}>
             Don't have an account?{" "}
-            <MuiLink
-              component={Link}
-              to="/register"
-              underline="hover"
-              sx={{ color: "#00bfff" }}
-            >
-              Register here
+            <MuiLink component={Link} to="/register" sx={{ color: "#90caf9", fontWeight: 500 }}>
+              Register
             </MuiLink>
           </Typography>
         </Paper>
@@ -179,4 +147,3 @@ const Login = () => {
 };
 
 export default Login;
-
